@@ -167,10 +167,14 @@ set of integers between 1 and 1 million (inclusive).
 4. First, we need a function that loads the input.
 """
 
-def load_input():
+def load_input(N=None, P=None):
     # Return a parallelized RDD with the integers between 1 and 1,000,000
     # This will be referred to in the following questions.
-    return sc.parallelize(range(1, 1_000_001))
+    if N is None:
+        N = 1_000_000  # your default from Q4
+    if P is None:
+        return sc.parallelize(range(N))
+    return sc.parallelize(range(N), numSlices=P)
 
 def q4(rdd):
     # Input: the RDD from load_input
@@ -304,8 +308,10 @@ def q7(rdd):
             else:
                 return h + " and " + small_number_to_words(rest)
 
-    # FINAL working version for Q7 and Q8b
     def number_to_words(n):
+        if n > 10_000_000:
+            n = n % 10_000_000
+
         if n == 0:
             return "zero"
         if n == 10_000_000:
@@ -369,23 +375,27 @@ Notes:
   helped speed it up.
 """
 
-def load_input_bigger():
-    return sc.parallelize(range(1, 10_000_001), 200)
+def load_input_bigger(N=None, P=None):
+    if N is None:
+        N = 10_000_000
+    if P is None:
+        return sc.parallelize(range(N))
+    return sc.parallelize(range(N), numSlices=P)
 
-def q8_a():
+def q8_a(N=None, P=None):
     # version of Q6
     # It should call into q6() with the new RDD!
     # Don't re-implemented the q6 logic.
     # Output: a tuple (most common digit, most common frequency, least common digit, least common frequency)
-    rdd_big = load_input_bigger()
+    rdd_big = load_input_bigger(N, P)
     return q6(rdd_big)
 
-def q8_b():
+def q8_b(N=None, P=None):
     # version of Q7
     # It should call into q7() with the new RDD!
     # Don't re-implemented the q6 logic.
     # Output: a tulpe (most common char, most common frequency, least common char, least common frequency)
-    rdd_big = load_input_bigger()
+    rdd_big = load_input_bigger(N, P)
     return q7(rdd_big)
 
 """

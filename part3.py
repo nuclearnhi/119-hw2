@@ -58,7 +58,27 @@ def PART_1_PIPELINE_PARAMETRIC(N, P):
     - load_input_bigger (including q8_a and q8_b) should use an input of size N.
     - both of these should return an RDD with level of parallelism P (number of partitions = P).
     """
-    raise NotImplementedError
+   # Create RDDs with given size + parallelism
+    from part1 import load_input, load_input_bigger, q1, q2, q4, q5, q6, q7, q11, q14, q8_a, q8_b
+
+    rdd = load_input(N=N, P=P)
+    rdd_big = load_input_bigger(N=N, P=P)
+
+    results = {}
+
+    # Part 1 questions using smaller input
+    results["q1"] = q1()
+    results["q2"] = q2()
+    results["q4"] = q4(rdd)
+    results["q5"] = q5(rdd)
+    results["q6"] = q6(rdd)
+    results["q7"] = q7(rdd)
+    results["q11"] = q11(rdd)
+    results["q14"] = q14(rdd)
+    results["q8a"] = q8_a(N=N, P=P)
+    results["q8b"] = q8_b(N=N, P=P)
+
+    return results
 
 """
 === Coding part 2: measuring the throughput and latency ===
@@ -115,8 +135,79 @@ That is why we are assuming the latency will just be the running time of the ent
 """
 
 # Copy in ThroughputHelper and LatencyHelper
+import time
+import matplotlib.pyplot as plt
+class ThroughputHelper:
+    def __init__(self):
+        pass
+
+    def measure(self, func, num_items):
+        start = time.time()
+        func()
+        end = time.time()
+        duration = end - start
+        if duration == 0:
+            return float('inf')
+        return num_items / duration
+
+class LatencyHelper:
+    def __init__(self):
+        pass
+
+    def measure(self, func):
+        start = time.time()
+        func()
+        end = time.time()
+        return end - start
 
 # Insert code to generate plots here as needed
+def run_part3_experiments():
+    Ps = [1, 2, 4, 8, 16]
+    Ns = [1, 10, 100, 1000, 10_000, 100_000, 1_000_000]
+
+    th = ThroughputHelper()
+    lh = LatencyHelper()
+
+    for P in Ps:
+        throughput_results = []
+        latency_results = []
+
+        print(f"\n=== Running P = {P} ===")
+
+        for N in Ns:
+            print(f"  Running N = {N} ...")
+
+            def pipeline_run():
+                PART_1_PIPELINE_PARAMETRIC(N, P)
+
+            # Throughput = (2N) / time
+            tp = th.measure(pipeline_run, num_items=2 * N)
+            lt = lh.measure(pipeline_run)
+
+            throughput_results.append(tp)
+            latency_results.append(lt)
+
+        # Throughput plot
+        plt.figure()
+        plt.plot(Ns, throughput_results, marker='o')
+        plt.xscale("log")
+        plt.xlabel("Input size N (log scale)")
+        plt.ylabel("Throughput (items/sec)")
+        plt.title(f"Throughput vs N (P={P})")
+        plt.grid(True)
+        plt.savefig(f"output/part3-throughput-{P}.png")
+        plt.close()
+
+        # Latency plot
+        plt.figure()
+        plt.plot(Ns, latency_results, marker='o')
+        plt.xscale("log")
+        plt.xlabel("Input size N (log scale)")
+        plt.ylabel("Latency (seconds)")
+        plt.title(f"Latency vs N (P={P})")
+        plt.grid(True)
+        plt.savefig(f"output/part3-latency-{P}.png")
+        plt.close()
 
 """
 === Reflection part ===
@@ -176,7 +267,6 @@ Running python3 part3.py should work and should re-generate all of your plots in
 """
 
 if __name__ == '__main__':
-    print("Complete part 3. Please use the main function below to generate your plots so that they are regenerated whenever the code is run:")
-
-    print("[add code here]")
-    # TODO: add code here
+    print("Running Part 3 experiments...")
+    run_part3_experiments()
+    print("Done! Plots saved in output/")
