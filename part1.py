@@ -173,8 +173,8 @@ def load_input(N=None, P=None):
     if N is None:
         N = 1_000_000  # your default from Q4
     if P is None:
-        return sc.parallelize(range(N))
-    return sc.parallelize(range(N), numSlices=P)
+        return sc.parallelize(range(1, N+1))
+    return sc.parallelize(range(1, N+1), numSlices=P)
 
 def q4(rdd):
     # Input: the RDD from load_input
