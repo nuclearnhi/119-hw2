@@ -1,0 +1,8 @@
+1. Expected behavior
+Based on the dataflow graph, I expected the pipeline to get faster when I increased the number of partitions. If parallelism doubles, then throughput should also roughly double, and latency should drop. This is because the theoretical model assumes perfect data parallelism with no overhead. So the general idea is more partitions = more speed.
+
+2. Actual behavior
+My real results mostly followed this pattern, but not perfectly. Going from 1 to 2 partitions improved things a lot. But going from 4 to 8 or 16 gave smaller improvements. With very small N values, the numbers jumped around because overhead dominated the runtime. In general, the direction matched the theory, but the speedups were weaker than expected. The real throughput was lower than what the model predicts, and the latency did not drop as much as I expected.
+
+3. Conjecture
+I conjecture that the biggest reason theory and reality do not match is overhead. Spark has costs like job setup, scheduling, task startup, communication, and serialization. The dataflow graph does not include any of these. When I increase the number of partitions, Spark has to manage more tasks, and the overhead starts to outweigh the benefits. For very small inputs, the overhead is basically the whole runtime, which makes the numbers unstable. So I think the real system has limits that the theoretical model does not capture.
